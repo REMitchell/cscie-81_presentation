@@ -32,14 +32,19 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.cross_validation import cross_val_score
 from sklearn import cross_validation
+from sklearn.preprocessing import Imputer
 
-
-CSV_SEP = ';'
+CSV_SEP = ','
 
 # get list of datasets of UCI rep to use
 def get_dataset_list():
-    datasets = ['https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv',
-                'https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv']
+    #datasets = ['https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv',
+    #            'https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv']
+    datasets = ['data/anneal.data.txt','data/glass.data.txt','data/heart.dat.txt','data/house-votes-84.data.txt']
+    #,'data/krkopt.data.txt',
+    #'data/letter-recognition.data.txt','data/sat.trn.txt','data/segment.dat.txt','data/sonar.all-data.txt',
+    #'data/soybean-large.data.txt','splice.data.txt']
+
     return datasets
 
 # Do bagging.
@@ -83,13 +88,18 @@ scores = []
 error_rates = []
 mean_error_rates = []
 for dataset_url in get_dataset_list():
+    print("Testing: "+dataset_url)
     datascore = []
     dataerrorrate = []
     df = pd.read_csv(dataset_url, CSV_SEP)
-    Y = df['quality'].values
-    df = df.drop('quality', 1)
-    Y = np.array([1 if y >= 7 else 0 for y in Y])
+    Y = df['class'].values
+    df = df.drop('class', 1)
+    df.fillna(df.mode().iloc[0])
     X = df.as_matrix()
+    print(X)
+    #imp = Imputer(missing_values='?', strategy='mode',axis=0)
+    #X = imp.fit_transform(df)
+    Y = np.array([1 if y >= 7 else 0 for y in Y])
     
     cart_score = do_cart(X, Y)
     bagging_score = do_bagging(X, Y)
